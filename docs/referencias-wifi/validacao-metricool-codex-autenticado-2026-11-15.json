@@ -1,0 +1,65 @@
+{
+  "data": "2026-11-15",
+  "motor": "assinatura Codex",
+  "modelo": "gpt-6.1-sol",
+  "esforco": "medium",
+  "CODEX_HOME": "/home/nmaldaner/.codex-2",
+  "servidor_testado": "metricool-inematds",
+  "codigo_cli": 0,
+  "segundos": 33.73,
+  "ferramentas_observadas_no_log": [
+    "metricool-inematds/getBrandSettings",
+    "metricool-inematds/getScheduledPosts"
+  ],
+  "resultado": {
+    "status": "ok",
+    "ownerUsername": "inematds@gmail.com",
+    "conta_confirmada": true,
+    "marcas": [
+      {
+        "blogId": 7797870,
+        "label": "inema.tds",
+        "redes": [
+          "Instagram",
+          "TikTok"
+        ]
+      },
+      {
+        "blogId": 7800440,
+        "label": "eventosextremos",
+        "redes": [
+          "Instagram",
+          "TikTok"
+        ]
+      },
+      {
+        "blogId": 7908265,
+        "label": "FTD",
+        "redes": [
+          "Instagram",
+          "TikTok"
+        ]
+      },
+      {
+        "blogId": 7999284,
+        "label": "Radar",
+        "redes": [
+          "Instagram",
+          "TikTok"
+        ]
+      },
+      {
+        "blogId": 8026101,
+        "label": "VIBE",
+        "redes": [
+          "TikTok"
+        ]
+      }
+    ],
+    "agenda_lida": true,
+    "total_agendados": 5,
+    "erro": ""
+  },
+  "publicacoes_criadas_ou_alteradas": false,
+  "cron_alterado": false
+}

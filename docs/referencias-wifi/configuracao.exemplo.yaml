@@ -1,0 +1,137 @@
+# EXEMPLO SEGURO — todas as APIs desativadas; nenhum valor de chave neste arquivo.
+# Base: oito etapas do gitbombando. Em outro sistema, adaptar nomes e validador uma vez.
+# Copiar este exemplo não transfere a autorização de API do gitbombando.
+# Edite os quatro campos da etapa desejada usando UMA opção abaixo.
+#
+# CLAUDE PELA ASSINATURA:
+#   tipo: assinatura
+#   motor: claude
+#   modelo: claude-opus-5-5
+#   esforco: low
+#
+# CODEX PELA ASSINATURA:
+#   tipo: assinatura
+#   motor: codex
+#   modelo: gpt-6.1-sol
+#   esforco: medium
+#
+# API ANTHROPIC DIRETA, somente após autorização explícita para o sistema/etapas:
+#   tipo: api
+#   motor: anthropic
+#   modelo: claude-opus-5-5
+#   esforco: low
+#   chave_nome: inemapro-api-key
+#   autorização: api.autorizada + api.autorizacao + api.etapas_autorizadas
+#
+# API OPENAI DIRETA, somente após autorização explícita:
+#   tipo: api
+#   motor: openai
+#   modelo: gpt-6.1-sol
+#   esforco: medium
+#   chave_nome: OPENAI_API_KEY
+#   autorização: api.openai.autorizada + api.openai.autorizacao
+#   O modelo disponível na API pode diferir da assinatura; conferir acesso.
+#   Não colocar a chave no Codex CLI; este adaptador usa Responses API diretamente.
+#
+# API OPENROUTER, somente após autorização explícita:
+#   tipo: api
+#   motor: openrouter
+#   modelo: anthropic/claude-opus-5.5
+#   esforco: low
+#   chave_nome: OPENROUTER_API_KEY
+#   autorização: api.openrouter.autorizada + api.openrouter.autorizacao
+#
+# Esforço: depende do modelo; low/medium são os exemplos testados.
+# API max_tokens é teto de saída, não orçamento em dólares.
+# Arquivo_chaves guarda só o caminho; chave_nome guarda só o alias. Não usar source.
+# Chave existente não é autorização. Os CLIs permanecem só pela assinatura.
+# Capa nesta implementação: Codex + image_gen; manter como está.
+# Metricool: Claude ou Codex + MCP. Codex já validado e integrado na v1.7.1.
+# Revisão precisa de modelo com visão. API de texto não executa MCP automaticamente.
+# Os nomes e limites abaixo são do exemplo gitbombando, não de todo sistema.
+versao: 1
+api:
+  autorizada: false
+  autorizacao: ''
+  etapas_autorizadas:
+  - roteiro
+  - revisao_video
+  - carrossel_filtro
+  - carrossel_textos
+  - carrossel_revisao
+  arquivo_chaves: /home/nmaldaner/projetos/wifi/.env
+  chave_nome: inemapro-api-key
+  versao_anthropic: '2023-06-01'
+  openai:
+    autorizada: false
+    autorizacao: ''
+    chave_nome: OPENAI_API_KEY
+  openrouter:
+    autorizada: false
+    autorizacao: ''
+    chave_nome: OPENROUTER_API_KEY
+etapas:
+  # Gera YAML; o script valida e pode pedir correção.
+  roteiro:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: low
+    timeout: 1800
+    max_tokens: 12000
+  # Ferramenta image_gen no Codex, sem mudança automática de motor.
+  capa:
+    tipo: assinatura
+    motor: codex
+    modelo: gpt-6.1-sol
+    esforco: medium
+    timeout: 1800
+  # Recebe dados e imagens; exige visão.
+  revisao_video:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: medium
+    timeout: 900
+    max_tokens: 6000
+  # Filtra projetos por tema.
+  carrossel_filtro:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: low
+    timeout: 300
+    max_tokens: 4000
+  # Gera textos JSON dos slides.
+  carrossel_textos:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: low
+    timeout: 1800
+    max_tokens: 14000
+  # Recebe imagens dos slides; exige visão.
+  carrossel_revisao:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: medium
+    timeout: 900
+    max_tokens: 6000
+  # Conector MCP para consultar agenda; pode trocar para Codex com perfil autenticado.
+  # Alternativa Codex: motor codex, modelo gpt-6.1-sol, esforço medium.
+  # codex_home: /home/nmaldaner/.codex-2
+  # mcp_servidor: metricool-inematds
+  metricool_agenda:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: low
+    timeout: 600
+  # Conector MCP para agendar; preservar trava de intervalo e prevenção de duplicação.
+  metricool_publicacao:
+    tipo: assinatura
+    motor: claude
+    modelo: claude-opus-5-5
+    esforco: low
+    timeout: 900
