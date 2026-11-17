@@ -218,6 +218,16 @@ class BridgeTests(unittest.TestCase):
         prefix = json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': 'partial'}})
         self.assertEqual(parse_output('codex', prefix + '\n' + data, 1)['status'], 'erro-incerto')
 
+    def test_real_claude_weekly_limit_is_quota(self):
+        # Real Claude Code rejection, 16/11/2026 (r7ex critic); account ids removed.
+        real = json.dumps({'type': 'result', 'subtype': 'success', 'is_error': True, 'api_error_status': 429,
+                           'api_error_type': 'rate_limit_error', 'api_error_origin': 'first_party',
+                           'api_error': 'usage_limit_reached', 'terminal_reason': 'api_error', 'num_turns': 1,
+                           'result': "You've hit your weekly limit · resets 9pm (America/Sao_Paulo)"})
+        self.assertEqual(parse_output('claude', real, 1)['status'], 'quota')
+        ok = json.dumps({'type': 'result', 'is_error': False, 'result': "You've hit your weekly limit"})
+        self.assertEqual(parse_output('claude', ok, 0)['status'], 'ok')
+
 
 if __name__ == '__main__':
     unittest.main()

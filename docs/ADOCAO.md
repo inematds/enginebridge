@@ -20,3 +20,7 @@ Comando de resolução previsível, entrada/saída validada pelo projeto, modelo
 ## Fora desta versão
 
 APIs de modelos, OpenRouter, daemon remoto, sincronização VPS, agente universal, equivalência automática de modelos, replay de ferramentas, leitura de saldo e alteração automática dos sistemas existentes.
+
+## Proposta futura para discutir
+
+[Chaveamento preventivo por cota](CHAVEAMENTO-PREVENTIVO.md): alerta e política configurável para trabalhos longos a partir de 90% de consumo; encaminhamento dos novos trabalhos compatíveis a partir de 98%. Somente anotado, sem implementação ou ativação.

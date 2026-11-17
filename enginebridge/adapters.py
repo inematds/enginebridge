@@ -42,6 +42,13 @@ def parse_output(engine, raw, returncode):
             if returncode == 0 and data.get('type') == 'result' and not data.get('is_error'):
                 return {'status': 'ok', 'texto': data.get('result', '')}
             # Only an explicit machine-readable rejection allows fallback.
+            # Real Claude Code format (16/11/2026): top-level api_error* fields, result carries the
+            # human message ("You've hit your weekly limit · resets ..."), terminal_reason api_error.
+            if data.get('is_error') is True and data.get('terminal_reason') == 'api_error':
+                if data.get('api_error') == 'usage_limit_reached':
+                    return {'status': 'quota', 'sem_execucao': True}
+                if data.get('api_error_status') == 429 or data.get('api_error_type') == 'rate_limit_error':
+                    return {'status': 'rate_limit', 'sem_execucao': True}
             code = data.get('error', {}).get('type') if isinstance(data.get('error'), dict) else None
             if code in {'rate_limit_error', 'usage_limit_reached'} and not data.get('result'):
                 return {'status': 'rate_limit' if code == 'rate_limit_error' else 'quota', 'sem_execucao': True}
