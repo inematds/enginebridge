@@ -1,7 +1,7 @@
 # Validação — 16/11/2026
 
 - Instalação editável em .venv Python 3.12, PyYAML 6.0.3: passou.
-- 20 testes sem rede: passaram. Cobrem resolução central/perfil, escolha global e etapa fixada, proibição de API, snapshot e bloqueio urgente, mudança de conta, suspensão persistente, cota compartilhada, erro incerto, validação, concorrência de quatro processos, recuperação e proprietário da concessão, consumidores Python/CLI, executável fictício e timeout real de processo.
+- 20 testes sem rede: passaram (21 em 17/11, com a recusa real de cota do Claude). Cobrem resolução central/perfil, escolha global e etapa fixada, proibição de API, snapshot e bloqueio urgente, mudança de conta, suspensão persistente, cota compartilhada, erro incerto, validação, concorrência de quatro processos, recuperação e proprietário da concessão, consumidores Python/CLI, executável fictício e timeout real de processo.
 - compileall: passou; CLI instalada informa 1.0.0.
 - Simulação CLI Codex rejeitado por cota → Claude fictício respondeu: passou.
 - Exemplos Python e shell resolveram a política sem inferência.
