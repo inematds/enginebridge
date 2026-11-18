@@ -46,6 +46,12 @@ projetos:
       critica:
         perfil: claude-alternativo
         alternativa: codex-principal
+  # Consumidor real: wifi/semanal/pauta.py explica em português simples cada proposta da pauta semanal
+  # (uma rodada por semana, itens já explicados ficam em cache). Nível menor: texto curto, sem ferramentas.
+  semanal:
+    etapas:
+      explicar:
+        nivel: menor
   # Somente exemplos: ainda não integrados aos projetos reais.
   consumidor-python:
     etapas:
