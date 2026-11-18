@@ -4,7 +4,6 @@ Cada linha é um assunto em andamento: leia o snapshot do assunto que for contin
 
 <!-- handoff-indice:inicio -->
 - `zelador-video-critico` · handoffs/history/2026-11-18T174054Z-zelador-video-critico.md · 18/11 14:40
-- `imersao-jarvis-guia` · handoffs/history/2026-11-18T173922Z-imersao-jarvis-guia.md · 18/11 14:39
 - `critico-videos-d29` · handoffs/history/2026-11-18T092854Z-critico-videos-d29.md · 18/11 06:28
 <!-- handoff-indice:fim -->
 
