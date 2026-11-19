@@ -2,7 +2,6 @@
 
 Consolidação em 16/11/2026. A fonte histórica continua no WiFi; os documentos abaixo são uma cópia de referência, não uma autorização de APIs nem um inventário permanentemente sincronizado.
 
-- `referencias-wifi/`: método provedores-independentes, adaptações e limites dos executores existentes.
 - `REVISAO-ASTRA.md`: crítica realizada por gpt-6-astra/high, Codex pela assinatura. A revisão recomendou política leve, autorização antes de preferência, conta/cota separadas de modelo, snapshots e admissão compartilhada. Foi uma revisão da proposta, não uma certificação deste código.
 - OpenPCBotV3 v3.36.17: runners por assinatura, sessões separadas e jobs; implementação anterior permanece no projeto responsável.
 - Gitbombando e ia-crons: experiência de perfis por etapa. Não importar suas permissões de APIs para este projeto.
