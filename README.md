@@ -48,15 +48,30 @@ test -f ~/.config/inema/modelos.env || cp config/modelos.example.env ~/.config/i
 
 O exemplo de modelos só é copiado se não existir configuração central. A etapa `demonstracao/padrao` herda o motor global e permite observar a troca com `prefer`; roteiro e crítica continuam com perfis fixados.
 
-## Trocar a conta do Claude ou do Codex — o processo
+## Duas contas do Claude: ter, manter e trocar
 
-1. 🧠 Criar a pasta da conta nova com os links das regras, skills e memória: `claude-conta preparar inematds`.
-2. 🧠 Logar pela assinatura nessa pasta (uma vez): `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login`.
+Cada assinatura do Claude Code fica numa pasta própria de login: a primeira na pasta padrão `~/.claude`, a segunda em `~/.claude-inematds`. As duas ficam logadas ao mesmo tempo e não se misturam. O `claude-conta` escolhe qual vale por padrão; no Codex, o mesmo papel é do `codex-conta`.
+
+1. 🧠 Criar a pasta da segunda conta, com links para regras, ganchos, skills, agentes, plugins e memória: `claude-conta preparar inematds`.
+2. 🧠 Logar pela assinatura nessa pasta, uma vez: `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai --email <e-mail>`. Se o navegador não abrir, copie o link impresso, autorize com a conta certa e cole o código no próprio terminal.
 3. ⚙️ Conferir os logins e o uso de cada conta: `claude-conta` e `claude-conta uso`.
-4. 🧠 Trocar a escolha: `claude-conta inematds` (ou `nei`); `--reinicia` reinicia os serviços sempre ligados. No Codex, `codex-conta inematds|nei`.
-5. ⚙️ O EngineBridge lê a escolha pelo `conta_env` e recusa trabalho resolvido na conta anterior ("Conta alterada").
+4. 🧠 Trocar o padrão: `claude-conta inematds` (ou `claude-conta nei` para voltar). Vale para terminais novos, timers, serviços que iniciarem depois e o EngineBridge; `--reinicia` também reinicia os serviços sempre ligados.
+5. 🧠 Usar a outra conta numa sessão só, sem mudar o padrão: `CLAUDE_CONFIG_DIR=~/.claude-inematds claude`.
+6. ⚙️ O EngineBridge lê a escolha pelo `conta_env` do motor claude, dá a cada conta seu próprio pool de cota (`claude-principal:claude-inematds`) e recusa trabalho resolvido na conta anterior ("Conta alterada").
 
-Terminais e sessões já abertos continuam na conta anterior até reiniciar.
+A barra de status mostra `cc:` e `cx:` com a conta do Claude e do Codex de cada sessão. Sessões e serviços já abertos continuam na conta antiga até reiniciar. A conta da pasta padrão é usada sem a variável `CLAUDE_CONFIG_DIR`: com ela, o Claude leria outro arquivo de estado e perderia conectores. Conectores com login próprio (MCP) pedem login de novo na pasta nova.
+
+### Login da segunda conta, uma vez só
+
+O login é feito por você, no seu terminal, porque é a autorização da assinatura. Testado em 20/11/2026 numa máquina em que o navegador não abre sozinho:
+
+1. Num terminal fora do Claude, com a janela larga para o link não quebrar, rode `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai --email <e-mail-da-conta>`.
+2. O comando imprime um link `https://claude.ai/oauth/authorize?...` e fica esperando. Não feche nem aperte Enter.
+3. Copie o link inteiro e abra em qualquer navegador. Use janela privada ou o celular se o navegador já estiver logado na outra conta, e confira que a página mostra a conta certa antes de clicar em Authorize.
+4. A página mostra um código. Cole o código inteiro, inclusive a parte depois do `#`, no mesmo terminal que está esperando, e dê Enter. Colar no chat do Claude não funciona: o código só vale para aquele comando, uma vez, e expira em poucos minutos.
+5. Confira com `claude-conta`: a pasta nova deve mostrar o e-mail da segunda conta. Se aparecer "(sem login)", repita a partir do passo 1 e use o código novo.
+
+**Pendente:** o cron e outros chamadores diretos do `claude` ainda não seguem a escolha. Próximo passo: todos lerem a conta ativa, e depois o EngineBridge passar a ter conta ativa e contas secundárias, usando a secundária quando a ativa bater na cota.
 
 ## Preferência global e exceções
 

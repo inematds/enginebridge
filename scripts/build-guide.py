@@ -37,6 +37,13 @@ projetos:
       critica:
         perfil: claude-alternativo
         alternativa: codex-principal'''
+twoacc='''claude-conta preparar inematds
+CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai
+claude-conta
+claude-conta uso
+claude-conta inematds
+claude-conta nei
+CLAUDE_CONFIG_DIR=~/.claude-inematds claude'''
 e=html.escape
 for lang in ['pt','en','es']:
  file=p/f'i18n/{lang}.json'
@@ -65,6 +72,7 @@ for lang in ['pt','en','es']:
  out+=section('glossario',d['glossary_title'],d['glossary_text'])
  for id,title,text,code in [('guia','install_title','install_text',install),('simular','simulate_title','simulate_text',simulate),('config','config_title','config_text',config),('contas','auth_title','auth_text','codex login\nclaude auth login\nmkdir -p ~/.config/inema\ntest -f ~/.config/inema/modelos.env || cp config/modelos.example.env ~/.config/inema/modelos.env'),('comandos','commands_title','commands_text',commands),('executar','real_title','real_text',real)]:
   out+=section(id,d[title],d[text],pre(code))
+  if id=='contas': out+=section('duas-contas',d['twoacc_title'],d['twoacc_text'],pre(twoacc))
  docs=''.join(f'<p><a href="{repo}/blob/main/docs/{f}">{e(d[k])}</a></p>' for k,f in [('docs','ARQUITETURA.md'),('plan','ADOCAO.md'),('references','REFERENCIAS.md')])
  out+=section('roadmap',d['adoption_title'],d['adoption_text'],docs)
  out+=f'''</div><footer><div class="wrap"><p>EngineBridge · {e(d['footer'])}</p><p><a href="{repo}">GitHub</a> · <a href="https://inema.club">INEMA.CLUB</a></p></div></footer><script>(function(){{var k='enginebridge-theme',b=document.body,t=document.getElementById('themeToggle');function paint(){{t.textContent=b.classList.contains('light')?'🌙':'☀️'}}try{{if(localStorage.getItem(k)==='light')b.classList.add('light')}}catch(e){{}}paint();t.addEventListener('click',function(){{b.classList.toggle('light');paint();try{{localStorage.setItem(k,b.classList.contains('light')?'light':'dark')}}catch(e){{}}}})}})();</script></body></html>'''

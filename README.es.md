@@ -50,15 +50,30 @@ test -f ~/.config/inema/modelos.env || cp config/modelos.example.env ~/.config/i
 
 El ejemplo de modelos solo se copia si no existe una configuración central. La etapa `demonstracao/padrao` hereda el motor global y permite observar el cambio con `prefer`; roteiro y crítica siguen usando perfiles fijados.
 
-## Cambiar la cuenta de Claude o de Codex — el proceso
+## Dos cuentas de Claude: tener, mantener y cambiar
 
-1. 🧠 Crear la carpeta de la cuenta nueva con enlaces a reglas, skills y memoria: `claude-conta preparar inematds`.
-2. 🧠 Iniciar sesión con la suscripción en esa carpeta (una vez): `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login`.
-3. ⚙️ Revisar el inicio de sesión y el uso de cada cuenta: `claude-conta` y `claude-conta uso`.
-4. 🧠 Cambiar la elección: `claude-conta inematds` (o `nei`); `--reinicia` reinicia los servicios siempre activos. En Codex, `codex-conta inematds|nei`.
-5. ⚙️ EngineBridge lee la elección mediante `conta_env` y rechaza trabajos resueltos con la cuenta anterior ("Conta alterada").
+Cada suscripción de Claude Code queda en una carpeta de inicio de sesión propia: la primera en la carpeta predeterminada `~/.claude`, la segunda en `~/.claude-inematds`. Las dos quedan con la sesión iniciada al mismo tiempo y no se mezclan. `claude-conta` elige cuál se usa por defecto; en Codex, la misma función corresponde a `codex-conta`.
 
-Las terminales y sesiones ya abiertas siguen con la cuenta anterior hasta reiniciarse.
+1. 🧠 Crear la carpeta de la segunda cuenta, con enlaces a reglas, hooks, skills, agentes, plugins y memoria: `claude-conta preparar inematds`.
+2. 🧠 Iniciar sesión con la suscripción en esa carpeta, una vez: `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai --email <e-mail>`. Si el navegador no se abre, copie el enlace impreso, autorice con la cuenta correcta y pegue el código en la propia terminal.
+3. ⚙️ Comprobar los inicios de sesión y el uso de cada cuenta: `claude-conta` y `claude-conta uso`.
+4. 🧠 Cambiar la cuenta predeterminada: `claude-conta inematds` (o `claude-conta nei` para volver). Se aplica a terminales nuevos, temporizadores, servicios que se inicien después y EngineBridge; `--reinicia` también reinicia los servicios que están siempre activos.
+5. 🧠 Usar la otra cuenta en una sola sesión, sin cambiar la predeterminada: `CLAUDE_CONFIG_DIR=~/.claude-inematds claude`.
+6. ⚙️ EngineBridge lee la selección mediante `conta_env` del motor claude, asigna a cada cuenta su propio pool de cuota (`claude-principal:claude-inematds`) y rechaza el trabajo resuelto en la cuenta anterior ("Conta alterada").
+
+La barra de estado muestra `cc:` y `cx:` con la cuenta de Claude y Codex de cada sesión. Las sesiones y los servicios ya abiertos siguen usando la cuenta anterior hasta reiniciarse. Se usa la cuenta de la carpeta predeterminada cuando no está la variable `CLAUDE_CONFIG_DIR`: con ella, Claude leería otro archivo de estado y perdería los conectores. Los conectores con inicio de sesión propio (MCP) piden iniciar sesión de nuevo en la carpeta nueva.
+
+### Inicio de sesión de la segunda cuenta, una sola vez
+
+El inicio de sesión lo haces tú, en tu terminal, porque es la autorización de la suscripción. Probado el 20/11/2026 en una máquina en la que el navegador no se abre solo:
+
+1. En un terminal fuera de Claude, con la ventana ancha para que el enlace no se corte, ejecuta `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai --email <e-mail-da-conta>`.
+2. El comando imprime un enlace `https://claude.ai/oauth/authorize?...` y queda esperando. No lo cierres ni pulses Enter.
+3. Copia el enlace completo y ábrelo en cualquier navegador. Usa una ventana privada o el celular si el navegador ya tiene iniciada la sesión en la otra cuenta, y comprueba que la página muestre la cuenta correcta antes de hacer clic en Authorize.
+4. La página muestra un código. Pega el código completo, incluida la parte después de `#`, en el mismo terminal que está esperando y pulsa Enter. Pegar en el chat de Claude no funciona: el código solo es válido para ese comando, una vez, y caduca en pocos minutos.
+5. Comprueba con `claude-conta`: la carpeta nueva debe mostrar el correo electrónico de la segunda cuenta. Si aparece "(sem login)", repite desde el paso 1 y usa el código nuevo.
+
+**Pendiente:** el cron y otros llamadores directos de `claude` todavía no siguen la elección. Próximo paso: que todos lean la cuenta activa y, después, que EngineBridge tenga una cuenta activa y cuentas secundarias, usando la secundaria cuando la activa alcance su cuota.
 
 ## Preferencia global y excepciones
 

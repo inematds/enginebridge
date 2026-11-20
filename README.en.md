@@ -48,15 +48,30 @@ test -f ~/.config/inema/modelos.env || cp config/modelos.example.env ~/.config/i
 
 The example models file is copied only if no central configuration exists. The `demonstracao/padrao` stage inherits the global engine and lets you observe the switch with `prefer`; roteiro and crítica remain tied to fixed profiles.
 
-## Switch the Claude or Codex account — the process
+## Two Claude accounts: set up, maintain, and switch
 
-1. 🧠 Create the new account folder with links to rules, skills and memory: `claude-conta preparar inematds`.
-2. 🧠 Sign in through the subscription in that folder (once): `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login`.
-3. ⚙️ Check each account's login and usage: `claude-conta` and `claude-conta uso`.
-4. 🧠 Switch the choice: `claude-conta inematds` (or `nei`); `--reinicia` restarts always-on services. For Codex, `codex-conta inematds|nei`.
-5. ⚙️ EngineBridge reads the choice through `conta_env` and refuses work resolved under the previous account ("Conta alterada").
+Each Claude Code subscription uses its own login folder: the first in the default folder `~/.claude`, the second in `~/.claude-inematds`. Both stay logged in at the same time and remain separate. `claude-conta` chooses which one is used by default; in Codex, `codex-conta` serves the same purpose.
 
-Terminals and sessions already open stay on the previous account until restarted.
+1. 🧠 Create the second account's folder, with links to rules, hooks, skills, agents, plugins, and memory: `claude-conta preparar inematds`.
+2. 🧠 Sign in with your subscription in that folder, once: `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai --email <e-mail>`. If the browser does not open, copy the printed link, authorize with the right account, and paste the code into the terminal.
+3. ⚙️ Check the logins and usage for each account: `claude-conta` and `claude-conta uso`.
+4. 🧠 Switch the default: `claude-conta inematds` (or `claude-conta nei` to switch back). This applies to new terminals, timers, services started afterward, and EngineBridge; `--reinicia` also restarts services that are always running.
+5. 🧠 Use the other account for just one session without changing the default: `CLAUDE_CONFIG_DIR=~/.claude-inematds claude`.
+6. ⚙️ EngineBridge reads the selection from the claude engine's `conta_env`, gives each account its own quota pool (`claude-principal:claude-inematds`), and rejects work resolved under the previous account ("Conta alterada").
+
+The status bar shows `cc:` and `cx:` with the Claude and Codex account for each session. Sessions and services that are already open stay on the old account until restarted. The account in the default folder is used without the `CLAUDE_CONFIG_DIR` variable: with it, Claude would read a different state file and lose its connectors. Connectors with their own login (MCP) require signing in again in the new folder.
+
+### Second account login, one time only
+
+You perform the login in your own terminal because this authorizes the subscription. Tested on 20/11/2026 on a machine where the browser does not open automatically:
+
+1. In a terminal outside Claude, with the window wide enough that the link does not wrap, run `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login --claudeai --email <e-mail-da-conta>`.
+2. The command prints a `https://claude.ai/oauth/authorize?...` link and waits. Do not close it or press Enter.
+3. Copy the entire link and open it in any browser. Use a private window or your phone if the browser is already logged into the other account, and check that the page shows the correct account before clicking Authorize.
+4. The page shows a code. Paste the entire code, including the part after `#`, into the same terminal that is waiting, then press Enter. Pasting it into Claude chat will not work: the code is valid only for that command, once, and expires within a few minutes.
+5. Check with `claude-conta`: the new folder should show the second account's email. If it shows "(sem login)", repeat from step 1 and use the new code.
+
+**Pending:** cron jobs and other direct callers of `claude` do not follow the choice yet. Next step: have all of them read the active account, then let EngineBridge hold an active account and secondary accounts, using a secondary one when the active account hits its quota.
 
 ## Global preference and exceptions
 
