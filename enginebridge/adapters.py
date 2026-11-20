@@ -6,14 +6,15 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from .core import env_file
+from .core import ACCOUNT_VAR, env_file
 
 
 def clean_environment(route):
     env = {k: v for k, v in os.environ.items() if not any(s in k.upper() for s in
-           ('API_KEY', 'AUTH_TOKEN', 'BASE_URL', 'OPENAI_', 'ANTHROPIC_', 'OPENROUTER_', 'CLAUDE_CODE_', 'CLAUDECODE', 'MODEL_PROVIDER', 'CODEX_HOME'))}
-    if route.get('codex_home'):
-        env['CODEX_HOME'] = route['codex_home']
+           ('API_KEY', 'AUTH_TOKEN', 'BASE_URL', 'OPENAI_', 'ANTHROPIC_', 'OPENROUTER_', 'CLAUDE_CODE_', 'CLAUDECODE', 'MODEL_PROVIDER', 'CODEX_HOME', 'CLAUDE_CONFIG_DIR'))}
+    # The ambient account never wins: only the account resolved in the route is used.
+    if route.get('conta_home'):
+        env[ACCOUNT_VAR[route['motor']]] = route['conta_home']
     return env
 
 

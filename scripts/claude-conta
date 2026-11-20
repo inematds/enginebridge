@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# claude-conta — escolhe a conta do Claude Code (assinatura) para o que iniciar dali em diante:
+# terminais novos, timers/serviços do systemd e o EngineBridge (conta_env do motor claude).
+#   claude-conta                       → mostra a conta escolhida e o login de cada pasta
+#   claude-conta preparar inematds     → cria ~/.claude-inematds com links para as regras, skills e memória
+#   claude-conta nei|inematds          → troca a escolha
+#   claude-conta inematds --reinicia   → troca e reinicia os serviços sempre ligados
+#   claude-conta uso                   → % da semana e das 5 h de cada conta (leitura, sem modelo)
+# Molde: codex-conta. Nunca usa chave de API; o login de cada pasta é feito por
+#   CLAUDE_CONFIG_DIR=<pasta> claude auth login
+# A conta nei usa a pasta padrão ~/.claude SEM a variável (com a variável o Claude passaria a ler
+# ~/.claude/.claude.json em vez de ~/.claude.json e perderia MCPs e estado).
+set -euo pipefail
+ENV="$HOME/.config/inema/claude-conta.env"
+CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
+SERVICOS=(openpcbotv3 inemaccbot continua aventuras-produz aventuras-fila)
+# O que a pasta nova compartilha com a ~/.claude (o login e o ~/.claude.json ficam separados).
+LINKS=(settings.json CLAUDE.md skills agents plugins hooks runbooks statusline-command.sh projects fable-rule.md)
+
+pasta() { case "$1" in
+  nei|nei.maldaner2014|principal) echo "$HOME/.claude" ;;
+  inematds|inema) echo "$HOME/.claude-inematds" ;;
+  *) echo "claude-conta: use nei ou inematds" >&2; exit 2 ;;
+esac; }
+nome() { case "$1" in nei|nei.maldaner2014|principal) echo nei ;; *) echo inematds ;; esac; }
+
+login() {  # e-mail logado na pasta, ou "(sem login)"
+  local dir=$1 out
+  if [ "$dir" = "$HOME/.claude" ]; then out=$(env -u CLAUDE_CONFIG_DIR timeout 20 "$CLAUDE_BIN" auth status 2>/dev/null || true)
+  else out=$(CLAUDE_CONFIG_DIR="$dir" timeout 20 "$CLAUDE_BIN" auth status 2>/dev/null || true); fi
+  printf '%s' "$out" | python3 -I -c 'import json,sys
+try:
+  d=json.load(sys.stdin); print(d.get("email") if d.get("loggedIn") else "(sem login)")
+except Exception: print("(sem login)")'
+}
+
+uso() {  # mesma leitura da barra de status: /api/oauth/usage com o token da própria pasta
+  local dir=$1 token
+  token=$(python3 -I -c 'import json,sys
+try: print(json.load(open(sys.argv[1]))["claudeAiOauth"]["accessToken"])
+except Exception: pass' "$dir/.credentials.json")
+  [ -n "$token" ] || { echo "(sem login)"; return; }
+  curl -s --max-time 6 -H "Authorization: Bearer $token" -H "anthropic-beta: oauth-2025-04-20" \
+    https://api.anthropic.com/api/oauth/usage | python3 -I -c 'import json,sys
+try:
+  d=json.load(sys.stdin); w=d.get("seven_day") or {}; h=d.get("five_hour") or {}
+  print(f"semana {w.get(\"utilization\")}% (zera {str(w.get(\"resets_at\"))[:16]}) · 5 h {h.get(\"utilization\")}%")
+except Exception: print("(uso indisponível)")'
+}
+
+atual=$(sed -n 's/^CONTA=//p' "$ENV" 2>/dev/null || true); atual=${atual:-nei}
+
+if [ $# -eq 0 ]; then
+  echo "Conta escolhida: $atual"
+  echo "Systemd agora:   CLAUDE_CONFIG_DIR=$(systemctl --user show-environment | sed -n 's/^CLAUDE_CONFIG_DIR=//p')"
+  for c in nei inematds; do echo "  $c → $(pasta $c): $(login "$(pasta $c)")"; done
+  exit 0
+fi
+
+if [ "$1" = uso ]; then
+  for c in nei inematds; do echo "$c: $(uso "$(pasta $c)")"; done
+  exit 0
+fi
+
+if [ "$1" = preparar ]; then
+  dir=$(pasta "${2:-inematds}"); [ "$dir" != "$HOME/.claude" ] || { echo "a pasta da nei já é a padrão" >&2; exit 2; }
+  mkdir -p "$dir"; chmod 700 "$dir"
+  for f in "${LINKS[@]}"; do
+    [ -e "$HOME/.claude/$f" ] || continue
+    if [ -e "$dir/$f" ] && [ ! -L "$dir/$f" ]; then echo "  mantido (já existe, não é link): $f"; continue; fi
+    ln -sfn "$HOME/.claude/$f" "$dir/$f"
+  done
+  echo "Pasta pronta: $dir ($(ls "$dir" | wc -l) itens). Login: CLAUDE_CONFIG_DIR=$dir claude auth login"
+  exit 0
+fi
+
+novo=$(nome "$1"); dir=$(pasta "$1")
+reinicia=0; [ "${2:-}" = "--reinicia" ] && reinicia=1
+quem=$(login "$dir")
+[ "$quem" != "(sem login)" ] || { echo "claude-conta: $dir sem login (rode: CLAUDE_CONFIG_DIR=$dir claude auth login)" >&2; exit 1; }
+
+if [ "$novo" = nei ]; then
+  printf 'CONTA=nei\n' > "$ENV.tmp"
+  systemctl --user unset-environment CLAUDE_CONFIG_DIR
+else
+  printf 'CONTA=%s\nCLAUDE_CONFIG_DIR=%s\n' "$novo" "$dir" > "$ENV.tmp"
+  systemctl --user set-environment CLAUDE_CONFIG_DIR="$dir"
+fi
+mv "$ENV.tmp" "$ENV"
+echo "Conta do Claude: $novo ($quem)"
+echo "Já vale para: terminais novos, timers e serviços que iniciarem agora e o EngineBridge."
+
+if [ $reinicia -eq 1 ]; then
+  for s in "${SERVICOS[@]}"; do
+    systemctl --user is-active -q "$s" 2>/dev/null && systemctl --user restart "$s" && echo "  reiniciado: $s"
+  done
+else
+  echo "Continuam na conta anterior até reiniciar (use --reinicia):"
+  for s in "${SERVICOS[@]}"; do systemctl --user is-active -q "$s" 2>/dev/null && echo "  $s"; done
+  echo "  + terminais e sessões Claude já abertos"
+fi

@@ -25,6 +25,22 @@ def env_file(path):
     return result
 
 
+# Each subscription CLI reads its account folder from one variable.
+ACCOUNT_VAR = {'codex': 'CODEX_HOME', 'claude': 'CLAUDE_CONFIG_DIR'}
+
+
+def account(engine, cfg):
+    """Account folder chosen by conta_env, or None for the CLI default folder."""
+    if not cfg.get('conta_env'):
+        return None
+    return env_file(cfg['conta_env']).get(ACCOUNT_VAR.get(engine, '')) or None
+
+
+def account_pool(base, home):
+    """Quota follows the account: two logins of the same engine never share a cooldown."""
+    return base if not home else base + ':' + Path(home).name.lstrip('.')
+
+
 class Bridge:
     def __init__(self, config, state=None):
         self.config_path = Path(config).expanduser().resolve()
@@ -96,10 +112,11 @@ class Bridge:
             pool = cfg.get('quota_pool')
             if not isinstance(pool, str) or not pool:
                 raise BridgeError('quota_pool explícito obrigatório; modelos da mesma conta compartilham cota')
-            route = {'motor': engine, 'tipo': 'assinatura', 'modelo': model, 'esforco': effort, 'quota_pool': pool, 'timeout': timeout,
-                     'binario': str(Path(cfg.get('binario', engine)).expanduser()), 'conta_env': cfg.get('conta_env')}
-            route['codex_home'] = env_file(cfg['conta_env']).get('CODEX_HOME') if cfg.get('conta_env') else None
-            identity = (engine, model, effort, pool)
+            home = account(engine, cfg)
+            route = {'motor': engine, 'tipo': 'assinatura', 'modelo': model, 'esforco': effort, 'quota_pool': account_pool(pool, home),
+                     'quota_pool_base': pool, 'timeout': timeout, 'binario': str(Path(cfg.get('binario', engine)).expanduser()),
+                     'conta_env': cfg.get('conta_env'), 'conta_home': home}
+            identity = (engine, model, effort, route['quota_pool'])
             if identity not in seen:
                 routes.append(route)
                 seen.add(identity)
@@ -120,12 +137,16 @@ class Bridge:
         for route in snapshot['rotas']:
             current = self.load()['motores'].get(route['motor'], {})
             # Frozen model selection, but urgent policy/account blocks apply at admission.
-            if current.get('habilitado') is not True or current.get('tipo') != 'assinatura' or current.get('quota_pool') != route['quota_pool']:
+            base = route.get('quota_pool_base', route['quota_pool'])
+            if current.get('habilitado') is not True or current.get('tipo') != 'assinatura' or current.get('quota_pool') != base:
                 attempts.append({'motor': route['motor'], 'status': 'politica-bloqueou'})
                 continue
-            current_home = env_file(current['conta_env']).get('CODEX_HOME') if current.get('conta_env') else None
-            if current_home != route.get('codex_home'):
+            if account(route['motor'], current) != route.get('conta_home'):
                 raise BridgeError('Conta alterada desde a resolução; resolva um novo trabalho')
+            # Blocking the base pool suspends every account of that engine.
+            if base != route['quota_pool'] and state.blocked(base):
+                attempts.append({'motor': route['motor'], 'status': 'pool-indisponivel'})
+                continue
             owner = state.acquire(route['quota_pool'], route['timeout'] + 30)
             if owner is None:
                 attempts.append({'motor': route['motor'], 'status': 'pool-indisponivel'})

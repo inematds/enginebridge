@@ -8,7 +8,7 @@
 
 Your automation can stop when a subscription reaches its quota, even if another one is available. EngineBridge is a local tool for choosing which AI engine handles each stage and using a declared alternative when allowed. It is for people who maintain bots, scripts, and routines with Claude Code and Codex. You define profiles, models, and effort; the program resolves the choice without consulting an AI. Running text requires Python and subscription-authenticated programs.
 
-**Version 1.0.0 — functional local core; integration with real systems is still pending.**
+**Version 1.1.0 — functional local core; integration with real systems is still pending.**
 
 [Complete guide](https://inematds.github.io/enginebridge/guia/en/) · [Architecture](docs/ARQUITETURA.md) (Portuguese) · [Adoption plan](docs/ADOCAO.md) (Portuguese) · [References and Astra review](docs/REFERENCIAS.md) (Portuguese)
 
@@ -37,7 +37,7 @@ The simulation produces a quota rejection in Codex, records a temporary suspensi
 
 ## Prepare accounts on a new machine
 
-Install Claude Code and Codex, authenticate through your subscriptions in the terminal, and set `binario` in the YAML. Never use an API key. The optional `conta_env` field points to a data file with `CODEX_HOME=/path/to/account`; without that file, the default Codex account is used.
+Install Claude Code and Codex, authenticate through your subscriptions in the terminal, and set `binario` in the YAML. Never use an API key. The optional `conta_env` field points to a data file with the account folder: `CODEX_HOME=/path` for Codex and `CLAUDE_CONFIG_DIR=/path` for Claude. Without the variable, each program uses its default folder. Quota follows the account: each folder gets its own pool (`claude-principal:claude-inematds`), and blocking the base pool suspends every account of that engine.
 
 ```bash
 codex login
@@ -47,6 +47,16 @@ test -f ~/.config/inema/modelos.env || cp config/modelos.example.env ~/.config/i
 ```
 
 The example models file is copied only if no central configuration exists. The `demonstracao/padrao` stage inherits the global engine and lets you observe the switch with `prefer`; roteiro and crítica remain tied to fixed profiles.
+
+## Switch the Claude or Codex account — the process
+
+1. 🧠 Create the new account folder with links to rules, skills and memory: `claude-conta preparar inematds`.
+2. 🧠 Sign in through the subscription in that folder (once): `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login`.
+3. ⚙️ Check each account's login and usage: `claude-conta` and `claude-conta uso`.
+4. 🧠 Switch the choice: `claude-conta inematds` (or `nei`); `--reinicia` restarts always-on services. For Codex, `codex-conta inematds|nei`.
+5. ⚙️ EngineBridge reads the choice through `conta_env` and refuses work resolved under the previous account ("Conta alterada").
+
+Terminals and sessions already open stay on the previous account until restarted.
 
 ## Global preference and exceptions
 

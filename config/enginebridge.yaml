@@ -19,6 +19,7 @@ motores:
     habilitado: true
     tipo: assinatura
     binario: ~/.local/bin/claude
+    conta_env: ~/.config/inema/claude-conta.env # claude-conta nei|inematds; nei = pasta padrão
     quota_pool: claude-principal
     niveis: {}
   openrouter:

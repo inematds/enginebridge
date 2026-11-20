@@ -26,6 +26,11 @@ class State:
         with self.connect() as db:
             db.execute("INSERT INTO pools(pool,blocked) VALUES (?,?) ON CONFLICT(pool) DO UPDATE SET blocked=excluded.blocked", (pool, int(blocked)))
 
+    def blocked(self, pool):
+        with self.connect() as db:
+            row = db.execute("SELECT blocked FROM pools WHERE pool=?", (pool,)).fetchone()
+        return bool(row and row[0])
+
     def cooldown(self, pool, seconds):
         with self.connect() as db:
             db.execute("INSERT INTO pools(pool,until) VALUES (?,?) ON CONFLICT(pool) DO UPDATE SET until=MAX(pools.until, excluded.until)", (pool, time.time() + seconds))

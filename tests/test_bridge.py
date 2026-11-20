@@ -32,6 +32,7 @@ class BridgeTests(unittest.TestCase):
         self.cfg = yaml.safe_load((ROOT / 'config/enginebridge.yaml').read_text())
         self.cfg['modelos_env'] = str(self.env)
         self.cfg['motores']['codex'].pop('conta_env')
+        self.cfg['motores']['claude'].pop('conta_env')
         self.path = self.root / 'policy.yaml'
         self.db = self.root / 'state.sqlite'
         self.save()
@@ -105,6 +106,51 @@ class BridgeTests(unittest.TestCase):
         self.save()
         with self.assertRaisesRegex(BridgeError, 'Conta alterada'):
             self.b.execute(snap, 'text')
+
+    def claude_account(self, folder):
+        env = self.root / 'claude-account.env'
+        env.write_text(f'CLAUDE_CONFIG_DIR={folder}\nCONTA=x\n' if folder else 'CONTA=nei\n')
+        self.cfg['motores']['claude']['conta_env'] = str(env)
+        self.save()
+        return env
+
+    def test_claude_account_drift_refused(self):
+        self.claude_account('/home/u/.claude-inematds')
+        snap = self.resolved()
+        self.claude_account(None)
+        calls = []
+        def run(r, p):
+            calls.append(r['motor'])
+            return {'status': 'quota', 'sem_execucao': True}
+        with self.assertRaisesRegex(BridgeError, 'Conta alterada'):
+            self.b.execute(snap, 'text', runner=run)
+        self.assertEqual(calls, ['codex'])
+
+    def test_claude_route_uses_resolved_account_not_ambient(self):
+        self.claude_account('/home/u/.claude-inematds')
+        route = self.resolved()['rotas'][1]
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': '/home/u/.claude-outra'}):
+            env = clean_environment(route)
+        self.assertEqual(env['CLAUDE_CONFIG_DIR'], '/home/u/.claude-inematds')
+        self.claude_account(None)
+        with patch.dict(os.environ, {'CLAUDE_CONFIG_DIR': '/home/u/.claude-outra'}):
+            env = clean_environment(self.resolved()['rotas'][1])
+        self.assertNotIn('CLAUDE_CONFIG_DIR', env)
+
+    def test_quota_pool_follows_account(self):
+        self.assertEqual(self.resolved()['rotas'][1]['quota_pool'], 'claude-principal')
+        self.claude_account('/home/u/.claude-inematds')
+        snap = self.resolved()
+        self.assertEqual(snap['rotas'][1]['quota_pool'], 'claude-principal:claude-inematds')
+        # Cooldown of the other login does not hold this one.
+        State(self.db).cooldown('claude-principal', 300)
+        State(self.db).block('codex-principal')
+        result = self.b.execute(snap, 'text', runner=lambda r, p: {'status': 'ok', 'texto': 'ok'})
+        self.assertEqual(result['rota']['quota_pool'], 'claude-principal:claude-inematds')
+        # Blocking the base pool suspends every account of the engine.
+        State(self.db).block('claude-principal')
+        with self.assertRaises(BridgeError):
+            self.b.execute(snap, 'text', runner=lambda r, p: {'status': 'ok', 'texto': 'ok'})
 
     def test_quota_fallback_persists_and_does_not_need_llm(self):
         calls = []

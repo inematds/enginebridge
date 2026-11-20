@@ -8,7 +8,7 @@
 
 Sua automação pode parar quando uma assinatura atinge a cota, mesmo tendo outra disponível. O EngineBridge é uma ferramenta local para escolher qual motor de IA atende cada etapa e usar uma alternativa declarada quando isso for permitido. Serve para quem mantém bots, scripts e rotinas com Claude Code e Codex. Você define perfis, modelos e esforço; o programa resolve a escolha sem consultar uma IA. Para executar textos, precisa de Python e dos programas autenticados pela assinatura.
 
-**Versão 1.0.0 — núcleo local funcional; integração com os sistemas reais ainda pendente.**
+**Versão 1.1.0 — núcleo local funcional; integração com os sistemas reais ainda pendente.**
 
 [Guia completo](https://inematds.github.io/enginebridge/guia/) · [Arquitetura](docs/ARQUITETURA.md) · [Plano de adoção](docs/ADOCAO.md) · [Referências e revisão Astra](docs/REFERENCIAS.md)
 
@@ -37,7 +37,7 @@ A simulação produz uma rejeição de cota no Codex, registra uma suspensão te
 
 ## Preparar contas em uma máquina nova
 
-Instale Claude Code e Codex, autentique pela assinatura no terminal e ajuste `binario` no YAML. Nunca use uma chave de API. O campo opcional `conta_env` aponta para um arquivo de dados com `CODEX_HOME=/caminho/da/conta`; sem esse arquivo, vale a conta padrão do Codex.
+Instale Claude Code e Codex, autentique pela assinatura no terminal e ajuste `binario` no YAML. Nunca use uma chave de API. O campo opcional `conta_env` aponta para um arquivo de dados com a pasta da conta: `CODEX_HOME=/caminho` no Codex e `CLAUDE_CONFIG_DIR=/caminho` no Claude. Sem a variável, vale a pasta padrão de cada programa. A cota segue a conta: cada pasta ganha seu próprio pool (`claude-principal:claude-inematds`), e bloquear o pool base suspende todas as contas daquele motor.
 
 ```bash
 codex login
@@ -47,6 +47,16 @@ test -f ~/.config/inema/modelos.env || cp config/modelos.example.env ~/.config/i
 ```
 
 O exemplo de modelos só é copiado se não existir configuração central. A etapa `demonstracao/padrao` herda o motor global e permite observar a troca com `prefer`; roteiro e crítica continuam com perfis fixados.
+
+## Trocar a conta do Claude ou do Codex — o processo
+
+1. 🧠 Criar a pasta da conta nova com os links das regras, skills e memória: `claude-conta preparar inematds`.
+2. 🧠 Logar pela assinatura nessa pasta (uma vez): `CLAUDE_CONFIG_DIR=~/.claude-inematds claude auth login`.
+3. ⚙️ Conferir os logins e o uso de cada conta: `claude-conta` e `claude-conta uso`.
+4. 🧠 Trocar a escolha: `claude-conta inematds` (ou `nei`); `--reinicia` reinicia os serviços sempre ligados. No Codex, `codex-conta inematds|nei`.
+5. ⚙️ O EngineBridge lê a escolha pelo `conta_env` e recusa trabalho resolvido na conta anterior ("Conta alterada").
+
+Terminais e sessões já abertos continuam na conta anterior até reiniciar.
 
 ## Preferência global e exceções
 
