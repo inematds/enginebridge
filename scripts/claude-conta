@@ -44,7 +44,7 @@ except Exception: pass' "$dir/.credentials.json")
     https://api.anthropic.com/api/oauth/usage | python3 -I -c 'import json,sys
 try:
   d=json.load(sys.stdin); w=d.get("seven_day") or {}; h=d.get("five_hour") or {}
-  print(f"semana {w.get(\"utilization\")}% (zera {str(w.get(\"resets_at\"))[:16]}) · 5 h {h.get(\"utilization\")}%")
+  print("semana %s%% (zera %s) · 5 h %s%%" % (w.get("utilization"), str(w.get("resets_at"))[:16], h.get("utilization")))
 except Exception: print("(uso indisponível)")'
 }
 
