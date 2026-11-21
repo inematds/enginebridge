@@ -8,7 +8,7 @@
 
 Your automation can stop when a subscription reaches its quota, even if another one is available. EngineBridge is a local tool for choosing which AI engine handles each stage and using a declared alternative when allowed. It is for people who maintain bots, scripts, and routines with Claude Code and Codex. You define profiles, models, and effort; the program resolves the choice without consulting an AI. Running text requires Python and subscription-authenticated programs.
 
-**Version 1.1.0 — functional local core; integration with real systems is still pending.**
+**Version 1.2.1 — functional local core; integration with real systems is still pending.**
 
 [Complete guide](https://inematds.github.io/enginebridge/guia/en/) · [Architecture](docs/ARQUITETURA.md) (Portuguese) · [Adoption plan](docs/ADOCAO.md) (Portuguese) · [References and Astra review](docs/REFERENCIAS.md) (Portuguese)
 
@@ -70,6 +70,17 @@ You perform the login in your own terminal because this authorizes the subscript
 3. Copy the entire link and open it in any browser. Use a private window or your phone if the browser is already logged into the other account, and check that the page shows the correct account before clicking Authorize.
 4. The page shows a code. Paste the entire code, including the part after `#`, into the same terminal that is waiting, then press Enter. Pasting it into Claude chat will not work: the code is valid only for that command, once, and expires within a few minutes.
 5. Check with `claude-conta`: the new folder should show the second account's email. If it shows "(sem login)", repeat from step 1 and use the new code.
+
+### Switch accounts with open sessions (quota ran out mid-session)
+
+An open session does not switch accounts by itself. Close and reopen each one under the new account; the conversation continues because both accounts use the same conversation folder (`~/.claude-inematds/projects` is a link to `~/.claude/projects`). Tested on 21/11/2026, with inematds at its 5 h limit:
+
+1. 🧠 Choose the account: `claude-conta nei` (or `claude-conta inematds`). Check the available quota first with `claude-conta uso`.
+2. ⚙️ See which sessions are open, in which terminal and account, and which have been closed: `claude-conta sessoes` (or `claude-conta sessoes ~/projetos/<pasta>`). It shows the id and last request for each; `← esta` marks the session from which the command was run.
+3. 🧠 In each terminal: exit with `/exit` and, in the same folder, run `unset CLAUDE_CONFIG_DIR CLAUDE_CONTA_AUTO` (only if the terminal was using the other account) and `claude --resume <id>`.
+4. 🧠 Check the status bar: `cc:nei` (or `cc:inematds`).
+
+Do not use `claude --continue` when there is more than one session in the same folder: it opens the folder’s most recent conversation, which may be a different one. With the id, `--resume` opens the correct session; without the id, it shows the list to choose from.
 
 **Pending:** cron jobs and other direct callers of `claude` do not follow the choice yet. Next step: have all of them read the active account, then let EngineBridge hold an active account and secondary accounts, using a secondary one when the active account hits its quota.
 

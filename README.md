@@ -8,7 +8,7 @@
 
 Sua automação pode parar quando uma assinatura atinge a cota, mesmo tendo outra disponível. O EngineBridge é uma ferramenta local para escolher qual motor de IA atende cada etapa e usar uma alternativa declarada quando isso for permitido. Serve para quem mantém bots, scripts e rotinas com Claude Code e Codex. Você define perfis, modelos e esforço; o programa resolve a escolha sem consultar uma IA. Para executar textos, precisa de Python e dos programas autenticados pela assinatura.
 
-**Versão 1.1.1 — núcleo local funcional; integração com os sistemas reais ainda pendente.**
+**Versão 1.2.1 — núcleo local funcional; integração com os sistemas reais ainda pendente.**
 
 [Guia completo](https://inematds.github.io/enginebridge/guia/) · [Arquitetura](docs/ARQUITETURA.md) · [Plano de adoção](docs/ADOCAO.md) · [Referências e revisão Astra](docs/REFERENCIAS.md)
 
@@ -70,6 +70,17 @@ O login é feito por você, no seu terminal, porque é a autorização da assina
 3. Copie o link inteiro e abra em qualquer navegador. Use janela privada ou o celular se o navegador já estiver logado na outra conta, e confira que a página mostra a conta certa antes de clicar em Authorize.
 4. A página mostra um código. Cole o código inteiro, inclusive a parte depois do `#`, no mesmo terminal que está esperando, e dê Enter. Colar no chat do Claude não funciona: o código só vale para aquele comando, uma vez, e expira em poucos minutos.
 5. Confira com `claude-conta`: a pasta nova deve mostrar o e-mail da segunda conta. Se aparecer "(sem login)", repita a partir do passo 1 e use o código novo.
+
+### Trocar de conta com sessões abertas (cota acabou no meio)
+
+Uma sessão aberta não troca de conta sozinha. Feche e reabra cada uma na conta nova; a conversa continua, porque as duas contas usam a mesma pasta de conversas (`~/.claude-inematds/projects` é link para `~/.claude/projects`). Testado em 21/11/2026, com a inematds no limite de 5 h:
+
+1. 🧠 Escolher a conta: `claude-conta nei` (ou `claude-conta inematds`). Conferir a folga antes com `claude-conta uso`.
+2. ⚙️ Ver quais sessões estão abertas, em qual terminal e conta, e quais foram fechadas: `claude-conta sessoes` (ou `claude-conta sessoes ~/projetos/<pasta>`). Mostra o id e o último pedido de cada uma; `← esta` marca a sessão de onde o comando foi chamado.
+3. 🧠 Em cada terminal: sair com `/exit` e, na mesma pasta, rodar `unset CLAUDE_CONFIG_DIR CLAUDE_CONTA_AUTO` (só se o terminal estava na outra conta) e `claude --resume <id>`.
+4. 🧠 Conferir na barra de status: `cc:nei` (ou `cc:inematds`).
+
+Não use `claude --continue` quando houver mais de uma sessão na mesma pasta: ele abre a conversa mais recente da pasta, que pode ser outra. Com o id, o `--resume` abre a certa; sem o id, mostra a lista para escolher.
 
 **Pendente:** o cron e outros chamadores diretos do `claude` ainda não seguem a escolha. Próximo passo: todos lerem a conta ativa, e depois o EngineBridge passar a ter conta ativa e contas secundárias, usando a secundária quando a ativa bater na cota.
 

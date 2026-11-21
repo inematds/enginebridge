@@ -57,6 +57,10 @@ if [ $# -eq 0 ]; then
   exit 0
 fi
 
+if [ "$1" = sessoes ] || [ "$1" = sessões ]; then  # quais estão abertas (conta, terminal) e quais foram fechadas
+  exec python3 -I "$(dirname "$(readlink -f "$0")")/claude-sessoes.py" "${2:-$PWD}"
+fi
+
 if [ "$1" = uso ]; then
   for c in nei inematds; do echo "$c: $(uso "$(pasta $c)")"; done
   exit 0
