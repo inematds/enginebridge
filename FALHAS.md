@@ -1,5 +1,6 @@
 | data | o que quebrou | menor correção | prompt ou infra |
 |---|---|---|---|
+| 2026-11-21 | `claude-conta nei` não valia num terminal que herdou `CLAUDE_CONFIG_DIR` da inematds do systemd (sem a marca CLAUDE_CONTA_AUTO, contava como escolha manual) | systemd recebe também `CLAUDE_CONTA_AUTO` junto com a pasta | infra |
 | 2026-11-20 | terminal aberto antes do `claude-conta inematds` abriu o Claude na nei (a escolha era lida só ao abrir o terminal) | `claude-conta.sh` relido na hora de abrir o Claude, pela função `claude()` e pelo `cc.sh`; escolha manual de `CLAUDE_CONFIG_DIR` vence | infra |
 | 2026-11-17 | parser de cota do Claude esperava error.type; a recusa real usa api_error no topo e traz texto em result, então nunca seria reconhecida | aceitar o formato real (is_error + terminal_reason api_error + api_error) com teste da recusa de 16/11 | prompt |
 | 2026-11-16 | guia resolvia nível herdado antes de preparar configuração central em máquina nova | mover preparação da conta/modelos antes do exemplo global | prompt |

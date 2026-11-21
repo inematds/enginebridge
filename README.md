@@ -8,7 +8,7 @@
 
 Sua automação pode parar quando uma assinatura atinge a cota, mesmo tendo outra disponível. O EngineBridge é uma ferramenta local para escolher qual motor de IA atende cada etapa e usar uma alternativa declarada quando isso for permitido. Serve para quem mantém bots, scripts e rotinas com Claude Code e Codex. Você define perfis, modelos e esforço; o programa resolve a escolha sem consultar uma IA. Para executar textos, precisa de Python e dos programas autenticados pela assinatura.
 
-**Versão 1.1.0 — núcleo local funcional; integração com os sistemas reais ainda pendente.**
+**Versão 1.1.1 — núcleo local funcional; integração com os sistemas reais ainda pendente.**
 
 [Guia completo](https://inematds.github.io/enginebridge/guia/) · [Arquitetura](docs/ARQUITETURA.md) · [Plano de adoção](docs/ADOCAO.md) · [Referências e revisão Astra](docs/REFERENCIAS.md)
 

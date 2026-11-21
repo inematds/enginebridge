@@ -81,10 +81,10 @@ quem=$(login "$dir")
 
 if [ "$novo" = nei ]; then
   printf 'CONTA=nei\n' > "$ENV.tmp"
-  systemctl --user unset-environment CLAUDE_CONFIG_DIR
+  systemctl --user unset-environment CLAUDE_CONFIG_DIR CLAUDE_CONTA_AUTO
 else
   printf 'CONTA=%s\nCLAUDE_CONFIG_DIR=%s\n' "$novo" "$dir" > "$ENV.tmp"
-  systemctl --user set-environment CLAUDE_CONFIG_DIR="$dir"
+  systemctl --user set-environment CLAUDE_CONFIG_DIR="$dir" CLAUDE_CONTA_AUTO="$dir"  # marca: herdado do systemd = automático, segue a troca
 fi
 mv "$ENV.tmp" "$ENV"
 echo "Conta do Claude: $novo ($quem)"
